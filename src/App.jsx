@@ -5,6 +5,7 @@ import { DeliveryForm } from './components/delivery/DeliveryForm';
 import { DeliverySummary } from './components/delivery/DeliverySummary';
 import { Loading } from './components/layout/Loading';
 import { useApp } from './context/AppContext';
+import Footer from './components/footer';
 
 function MainContent() {
   const { loading, error } = useApp();
@@ -37,7 +38,8 @@ function App() {
         <div className="max-w-4xl mx-auto p-4">
           <MainContent />
         </div>
-      </div>
+       <Footer/>
+      </div> 
     </AppProvider>
   );
 }
