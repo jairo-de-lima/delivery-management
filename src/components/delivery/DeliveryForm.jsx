@@ -6,9 +6,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 export function DeliveryForm({ onSuccess, initialData, isEditing }) {
   const {
@@ -25,10 +27,12 @@ export function DeliveryForm({ onSuccess, initialData, isEditing }) {
     new Date().toISOString().split("T")[0]
   );
 
-  // Novos estados para gerenciamento de entregadores
   const [isManageDialogOpen, setIsManageDialogOpen] = useState(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [personToDelete, setPersonToDelete] = useState(null); // Novo estado para o entregador a ser excluído
   const [editingPerson, setEditingPerson] = useState(null);
   const [editedName, setEditedName] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     if (initialData && isEditing) {
@@ -46,15 +50,22 @@ export function DeliveryForm({ onSuccess, initialData, isEditing }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Verifica se um entregador está selecionado e se há contagem de pacotes
     if (!selectedDeliveryPerson) {
-      alert("Por favor, selecione um entregador antes de enviar.");
-      return // Não continua o envio se nenhum entregador estiver selecionado
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione um entregador antes de enviar.",
+        duration: 2000,
+      });
+      return;
     }
 
     if (!packageCount) {
-      alert("Por favor, insira a quantidade de pacotes.");
-      return; // Não continua o envio se não houver contagem de pacotes
+      toast({
+        title: "Erro",
+        description: "Por favor, insira a quantidade de pacotes.",
+        duration: 2000,
+      });
+      return;
     }
 
     const deliveryData = {
@@ -70,10 +81,15 @@ export function DeliveryForm({ onSuccess, initialData, isEditing }) {
       addDelivery(deliveryData);
     }
 
-    // Limpa os campos após o envio
     setPackageCount("");
     setAdditionalValue("");
     onSuccess?.();
+
+    toast({
+      title: "Sucesso",
+      description: "Entrega registrada com sucesso!",
+      duration: 2000,
+    });
   };
 
   const handleEditPerson = (person) => {
@@ -87,19 +103,40 @@ export function DeliveryForm({ onSuccess, initialData, isEditing }) {
         await updateDeliveryPerson(editingPerson.id, editedName.trim());
         setEditingPerson(null);
         setEditedName("");
+        setIsManageDialogOpen(false);
       } catch (err) {
-        console.error("Erro ao atualizar entregador:", err);
+        toast({
+          title: "Erro",
+          description: "Erro ao atualizar entregador",
+          duration: 2000,
+        });
       }
     }
   };
 
-  const handleDeletePerson = async (person) => {
-    if (window.confirm("Tem certeza que deseja excluir este entregador?")) {
+  const handleDeletePerson = (person) => {
+    setPersonToDelete(person); // Define o entregador a ser excluído
+    setIsConfirmDialogOpen(true); // Abre o dialog de confirmação
+  };
+
+  const confirmDeletePerson = async () => {
+    if (personToDelete) {
       try {
-        await deleteDeliveryPerson(person.id); // Altere para usar person.id
-        onSuccess?.(); // Chame onSuccess para atualizar a interface, se necessário
+        await deleteDeliveryPerson(personToDelete.id);
+        onSuccess?.();
+        setIsConfirmDialogOpen(false);
+        setPersonToDelete(null); // Limpa o estado
+        toast({
+          title: "Sucesso",
+          description: "Entregador excluído com sucesso.",
+          duration: 2000,
+        });
       } catch (err) {
-        console.error("Erro ao excluir entregador:", err);
+        toast({
+          title: "Erro",
+          description: "Erro ao excluir entregador.",
+          duration: 2000,
+        });
       }
     }
   };
@@ -121,6 +158,7 @@ export function DeliveryForm({ onSuccess, initialData, isEditing }) {
         </Button>
       </div>
 
+      {/* Dialog de Gerenciamento de Entregadores */}
       <Dialog open={isManageDialogOpen} onOpenChange={setIsManageDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -172,6 +210,24 @@ export function DeliveryForm({ onSuccess, initialData, isEditing }) {
               </div>
             ))}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Confirmação de Exclusão */}
+      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Exclusão</DialogTitle>
+          </DialogHeader>
+          <p>Tem certeza de que deseja excluir este entregador?</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsConfirmDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={confirmDeletePerson}>
+              Confirmar
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
