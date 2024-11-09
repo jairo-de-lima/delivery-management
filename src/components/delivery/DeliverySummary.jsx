@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState } from "react";
 import { DollarSign, Edit, Trash2, User } from "lucide-react";
 import { useApp } from "../../context/AppContext";
@@ -12,10 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DeliveryForm } from "./DeliveryForm";
 import { useToast } from "@/hooks/use-toast";
+import { DeliveryAnalytics } from "./DeliveryAnalytics";
 
-export function DeliverySummary({ onSuccess, initialData, isEditing }) {
+// eslint-disable-next-line react/prop-types
+export function DeliverySummary({ onSuccess }) {
   const { deliveries, deliveryPeople, deleteDelivery } = useApp();
-  const [error, setError] = useState(null);
+  const [error] = useState(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentDelivery, setCurrentDelivery] = useState(null);
   const [selectedPerson, setSelectedPerson] = useState(null);
@@ -28,7 +31,7 @@ export function DeliverySummary({ onSuccess, initialData, isEditing }) {
   const handleDeleteDelivery = (delivery) => {
     setDeliveryToDelete(delivery); // Define o entregador a ser excluído
     setIsConfirmDialogOpen(true); // Abre o dialog de confirmação
-    console.log(delivery)
+    console.log(delivery);
   };
   const confirmDeleteDelivery = async () => {
     if (deliveryToDelete) {
@@ -42,6 +45,7 @@ export function DeliverySummary({ onSuccess, initialData, isEditing }) {
           description: "Entrega excluída com sucesso.",
           duration: 2000,
         });
+        // eslint-disable-next-line no-unused-vars
       } catch (err) {
         toast({
           title: "Erro",
@@ -88,11 +92,12 @@ export function DeliverySummary({ onSuccess, initialData, isEditing }) {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <div className="flex items-center mb-6">
+      <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold flex items-center gap-2">
           <DollarSign className="w-6 h-6" />
           Resumo de Entregas
         </h2>
+        <DeliveryAnalytics />
       </div>
 
       {error && (
@@ -103,30 +108,31 @@ export function DeliverySummary({ onSuccess, initialData, isEditing }) {
 
       {/* Lista de Entregadores */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        {deliveryPeople.filter((person) => getPersonDeliveries(person.id).length > 0).map((person) => {          
-          const personDeliveries = getPersonDeliveries(person.id);
-          const totalEarnings = calculateTotalEarnings(personDeliveries);
-          
+        {deliveryPeople
+          .filter((person) => getPersonDeliveries(person.id).length > 0)
+          .map((person) => {
+            const personDeliveries = getPersonDeliveries(person.id);
+            const totalEarnings = calculateTotalEarnings(personDeliveries);
 
-          return (
-            <div
-              key={person.id}
-              onClick={() => handlePersonSelect(person)}
-              className="bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <User className="w-5 h-5 text-gray-600" />
-                <h3 className="font-bold text-lg uppercase">{person.name}</h3>
+            return (
+              <div
+                key={person.id}
+                onClick={() => handlePersonSelect(person)}
+                className="bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <User className="w-5 h-5 text-gray-600" />
+                  <h3 className="font-bold text-lg uppercase">{person.name}</h3>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Total de entregas: {personDeliveries.length}
+                </p>
+                <p className="text-sm font-semibold text-gray-700">
+                  Total ganhos: R$ {totalEarnings.toFixed(2)}
+                </p>
               </div>
-              <p className="text-sm text-gray-600">
-                Total de entregas: {personDeliveries.length}
-              </p>
-              <p className="text-sm font-semibold text-gray-700">
-                Total ganhos: R$ {totalEarnings.toFixed(2)}
-              </p>
-            </div>
-          );
-        })}
+            );
+          })}
       </div>
 
       {/* Modal de Edição */}
@@ -215,8 +221,7 @@ export function DeliverySummary({ onSuccess, initialData, isEditing }) {
                   >
                     Cancelar
                   </Button>
-                  <Button variant="destructive" 
-                  onClick={confirmDeleteDelivery}>
+                  <Button variant="destructive" onClick={confirmDeleteDelivery}>
                     Confirmar
                   </Button>
                 </DialogFooter>

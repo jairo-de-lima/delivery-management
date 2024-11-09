@@ -1,13 +1,14 @@
-import React from 'react';
-import { AppProvider } from './context/AppContext';
-import { CourierForm } from './components/courier/CourierForm';
-import { DeliveryForm } from './components/delivery/DeliveryForm';
-import { DeliverySummary } from './components/delivery/DeliverySummary';
-import { Loading } from './components/layout/Loading';
-import { useApp } from './context/AppContext';
-import Footer from './components/footer';
+// eslint-disable-next-line no-unused-vars
+import React from "react";
+import { AppProvider } from "./context/AppContext";
+import { CourierForm } from "./components/courier/CourierForm";
+import { DeliveryForm } from "./components/delivery/DeliveryForm";
+import { DeliverySummary } from "./components/delivery/DeliverySummary";
+import { Loading } from "./components/layout/Loading";
+import { useApp } from "./context/AppContext";
+import Footer from "./components/footer";
 import { Toaster } from "./components/ui/toaster";
-import PasswordProtectedPage from './components/PasswordProtectedPage';
+import PasswordProtectedPage from "./components/PasswordProtectedPage";
 
 function MainContent() {
   const { loading, error } = useApp();
@@ -42,7 +43,7 @@ function App() {
             <MainContent />
             <Toaster />
           </div>
-          <Footer/>
+          <Footer />
         </div>
       </AppProvider>
     </PasswordProtectedPage>

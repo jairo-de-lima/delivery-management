@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from "react";
 import { Package, Settings } from "lucide-react";
 import { useApp } from "../../context/AppContext";
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
+// eslint-disable-next-line react/prop-types
 export function DeliveryForm({ onSuccess, initialData, isEditing }) {
   const {
     deliveryPeople,
@@ -36,13 +38,18 @@ export function DeliveryForm({ onSuccess, initialData, isEditing }) {
 
   useEffect(() => {
     if (initialData && isEditing) {
+      // eslint-disable-next-line react/prop-types
       setSelectedDeliveryPerson(initialData.deliveryPersonId);
+      // eslint-disable-next-line react/prop-types
       setPackageCount(initialData.packages.toString());
       setAdditionalValue(
+        // eslint-disable-next-line react/prop-types
         initialData.additionalValue
-          ? initialData.additionalValue.toString()
+          ? // eslint-disable-next-line react/prop-types
+            initialData.additionalValue.toString()
           : ""
       );
+      // eslint-disable-next-line react/prop-types
       setSelectedDate(initialData.date);
     }
   }, [initialData, isEditing]);
@@ -76,6 +83,7 @@ export function DeliveryForm({ onSuccess, initialData, isEditing }) {
     };
 
     if (isEditing && initialData) {
+      // eslint-disable-next-line react/prop-types
       updateDelivery(initialData.id, deliveryData);
     } else {
       addDelivery(deliveryData);
@@ -104,6 +112,7 @@ export function DeliveryForm({ onSuccess, initialData, isEditing }) {
         setEditingPerson(null);
         setEditedName("");
         setIsManageDialogOpen(false);
+        // eslint-disable-next-line no-unused-vars
       } catch (err) {
         toast({
           title: "Erro",
@@ -131,6 +140,7 @@ export function DeliveryForm({ onSuccess, initialData, isEditing }) {
           description: "Entregador excluído com sucesso.",
           duration: 2000,
         });
+        // eslint-disable-next-line no-unused-vars
       } catch (err) {
         toast({
           title: "Erro",
@@ -221,7 +231,10 @@ export function DeliveryForm({ onSuccess, initialData, isEditing }) {
           </DialogHeader>
           <p>Tem certeza de que deseja excluir este entregador?</p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsConfirmDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsConfirmDialogOpen(false)}
+            >
               Cancelar
             </Button>
             <Button variant="destructive" onClick={confirmDeletePerson}>
