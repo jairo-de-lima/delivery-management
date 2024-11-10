@@ -56,17 +56,6 @@ export function DeliverySummary({ onSuccess }) {
     }
   };
 
-  // const handleDelete = async (deliveryId) => {
-  //   if (window.confirm("Tem certeza que deseja excluir esta entrega?")) {
-  //     try {
-  //       await deleteDelivery(deliveryId);
-  //     } catch (err) {
-  //       setError("Erro ao excluir entrega");
-  //       console.error(err);
-  //     }
-  //   }
-  // };
-
   const handleOpenEdit = (delivery) => {
     setCurrentDelivery(delivery);
     setIsEditDialogOpen(true);

@@ -110,6 +110,7 @@ export function DeliveryAnalytics() {
     const results = filteredDeliveries.reduce(
       (acc, delivery) => ({
         totalDeliveries: acc.totalDeliveries + 1,
+        totalPackages: acc.totalPackages + (parseFloat(delivery.packages) || 0),
         totalValue: acc.totalValue + (parseFloat(delivery.totalValue) || 0),
         totalAdditional:
           acc.totalAdditional + (parseFloat(delivery.additionalValue) || 0),
@@ -125,6 +126,7 @@ export function DeliveryAnalytics() {
       }),
       {
         totalDeliveries: 0,
+        totalPackages: 0,
         totalValue: 0,
         totalAdditional: 0,
         deliveriesByDate: {},
@@ -143,6 +145,7 @@ export function DeliveryAnalytics() {
       </Card>
     );
   }
+  console.log(analytics);
 
   const exportStructuredPDF = async () => {
     try {
@@ -178,9 +181,10 @@ export function DeliveryAnalytics() {
       pdf.text("Resumo Geral", 14, 45);
 
       const summaryData = [
-        ["Total de Entregas", analytics.totalDeliveries.toString()],
-        ["Valor Total", `R$ ${analytics.totalValue.toFixed(2)}`],
-        ["Total Adicional", `R$ ${analytics.totalAdditional.toFixed(2)}`],
+        ["Total de Rotas", analytics.totalDeliveries.toString()],
+        ["Total de Pacotes", analytics.totalPackages.toString()],
+        ["Valores Adicionais", `R$ ${analytics.totalAdditional.toFixed(2)}`],
+        ["Saldo Total", `R$ ${analytics.totalValue.toFixed(2)}`],
       ];
 
       pdf.autoTable({
