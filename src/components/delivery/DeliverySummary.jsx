@@ -1,6 +1,5 @@
-// eslint-disable-next-line no-unused-vars
-import React, { useState } from "react";
-import { DollarSign, Edit, Trash2, User } from "lucide-react";
+import { useState } from "react";
+import { CalendarClock, DollarSign, Edit, Trash2, User } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import {
   Dialog,
@@ -9,13 +8,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Card, CardContent, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DeliveryForm } from "./DeliveryForm";
 import { useToast } from "@/hooks/use-toast";
 import { DeliveryAnalytics } from "./DeliveryAnalytics";
 
-// eslint-disable-next-line react/prop-types
 export function DeliverySummary({ onSuccess }) {
   const { deliveries, deliveryPeople, deleteDelivery } = useApp();
   const [error] = useState(null);
@@ -23,30 +22,40 @@ export function DeliverySummary({ onSuccess }) {
   const [currentDelivery, setCurrentDelivery] = useState(null);
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [isDeliveryDetailsOpen, setIsDeliveryDetailsOpen] = useState(false);
+  const [selectedQuinzena, setSelectedQuinzena] = useState("first"); // Estado para a quinzena selecionada
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  const [deliveryToDelete, setDeliveryToDelete] = useState(null); // Novo estado para o entregador a ser excluído
+  const [deliveryToDelete, setDeliveryToDelete] = useState(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const { toast } = useToast();
+  const [isCardOpen, setIsCardOpen] = useState(false);
+
+  const handleToggleCard = () => {
+    setIsCardOpen(!isCardOpen);
+  };
+  const handleCloseCard = () => {
+    setIsCardOpen(false);
+  };
 
   const handleDeleteDelivery = (delivery) => {
-    setDeliveryToDelete(delivery); // Define o entregador a ser excluído
-    setIsConfirmDialogOpen(true); // Abre o dialog de confirmação
-    console.log(delivery);
+    setDeliveryToDelete(delivery);
+    setIsConfirmDialogOpen(true);
   };
+
   const confirmDeleteDelivery = async () => {
     if (deliveryToDelete) {
       try {
-        await deleteDelivery(deliveryToDelete); // Passa o ID correto
+        await deleteDelivery(deliveryToDelete);
         onSuccess?.();
         setIsConfirmDialogOpen(false);
-        setDeliveryToDelete(null); // Limpa o estado corretamente
+        setDeliveryToDelete(null);
         toast({
           title: "Sucesso",
           description: "Entrega excluída com sucesso.",
           duration: 2000,
         });
-        // eslint-disable-next-line no-unused-vars
-      } catch (err) {
+      } catch {
         toast({
           title: "Erro",
           description: "Erro ao excluir entrega.",
@@ -55,7 +64,6 @@ export function DeliverySummary({ onSuccess }) {
       }
     }
   };
-
   const handleOpenEdit = (delivery) => {
     setCurrentDelivery(delivery);
     setIsEditDialogOpen(true);
@@ -66,10 +74,34 @@ export function DeliverySummary({ onSuccess }) {
     setIsDeliveryDetailsOpen(true);
   };
 
+  // Função para calcular o intervalo da quinzena baseado no mês
+  const getQuinzenaRange = (quinzena) => {
+    const startMonth = selectedMonth;
+    const startYear = selectedYear;
+    const lastDayOfMonth = new Date(startYear, startMonth + 1, 0).getDate();
+
+    if (quinzena === "first") {
+      // Primeira quinzena: do dia 1 ao dia 15
+      const start = new Date(startYear, startMonth, 0);
+      const end = new Date(startYear, startMonth, 15);
+      return { start, end };
+    } else {
+      // Segunda quinzena: do dia 16 ao último dia do mês
+      const start = new Date(startYear, startMonth, 16);
+      const end = new Date(startYear, startMonth, lastDayOfMonth);
+      return { start, end };
+    }
+  };
+  const { start, end } = getQuinzenaRange(selectedQuinzena);
   const getPersonDeliveries = (personId) => {
-    return deliveries.filter(
-      (delivery) => delivery.deliveryPersonId === personId
-    );
+    return deliveries.filter((delivery) => {
+      const deliveryDate = new Date(delivery.date);
+      return (
+        delivery.deliveryPersonId === personId &&
+        deliveryDate >= start &&
+        deliveryDate <= end
+      );
+    });
   };
 
   const calculateTotalEarnings = (personDeliveries) => {
@@ -86,7 +118,67 @@ export function DeliverySummary({ onSuccess }) {
           <DollarSign className="w-6 h-6" />
           Resumo de Entregas
         </h2>
-        <DeliveryAnalytics />
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={handleToggleCard}>
+            <CalendarClock className="w-5 h-5" />
+          </Button>
+          {isCardOpen && (
+            <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+              <Card className="w-[90%] max-w-sm bg-white shadow-lg rounded-lg p-6">
+                <CardTitle className="text-lg font-semibold text-center mb-4">
+                  Selecione a Quinzena
+                </CardTitle>
+
+                <CardContent className="flex flex-col gap-2 w-full p-2 rounded-md mb-4">
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                    className="border p-2 rounded"
+                  >
+                    {Array.from({ length: 12 }, (_, index) => (
+                      <option key={index} value={index}>
+                        {new Date(0, index).toLocaleString("pt-BR", {
+                          month: "long",
+                        })}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Seletor de ano */}
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                    className="border p-2 rounded"
+                  >
+                    {Array.from({ length: 10 }, (_, index) => {
+                      const year = new Date().getFullYear() - index;
+                      return (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <select
+                    id="quinzena"
+                    value={selectedQuinzena}
+                    onChange={(e) => setSelectedQuinzena(e.target.value)}
+                    className="p-2 border rounded-md"
+                  >
+                    <option value="first">1ª Quinzena</option>
+                    <option value="second">2ª Quinzena</option>
+                  </select>
+                </CardContent>
+                <CardFooter className="flex w-full justify-end">
+                  <Button variant="outline" onClick={handleCloseCard}>
+                    fechar
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+          )}
+          <DeliveryAnalytics />
+        </div>
       </div>
 
       {error && (
@@ -124,9 +216,9 @@ export function DeliverySummary({ onSuccess }) {
           })}
       </div>
 
-      {/* Modal de Edição */}
+      {/* modal de edicao */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="w-[90%] rounded-sm">
           <DialogHeader>
             <DialogTitle>Editar Entrega</DialogTitle>
           </DialogHeader>
@@ -143,7 +235,7 @@ export function DeliverySummary({ onSuccess }) {
         open={isDeliveryDetailsOpen}
         onOpenChange={setIsDeliveryDetailsOpen}
       >
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl w-[90%] rounded-sm">
           <DialogHeader className="flex items-center justify-between">
             <DialogTitle className="text-xl">
               Entregas de {selectedPerson?.name}
@@ -198,7 +290,7 @@ export function DeliverySummary({ onSuccess }) {
               open={isConfirmDialogOpen}
               onOpenChange={setIsConfirmDialogOpen}
             >
-              <DialogContent>
+              <DialogContent className="w-[90%] rounded-sm">
                 <DialogHeader>
                   <DialogTitle>Confirmar Exclusão</DialogTitle>
                 </DialogHeader>

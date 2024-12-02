@@ -145,7 +145,6 @@ export function DeliveryAnalytics() {
       </Card>
     );
   }
-  console.log(analytics);
 
   const exportStructuredPDF = async () => {
     try {
@@ -294,7 +293,7 @@ export function DeliveryAnalytics() {
           <Search className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto w-[90%] rounded-md">
         <DialogHeader className="top-0 z-10 pb-4">
           <DialogTitle>Análise de Entregas por Período</DialogTitle>
         </DialogHeader>
