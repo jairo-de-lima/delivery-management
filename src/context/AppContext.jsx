@@ -88,6 +88,7 @@ export function AppProvider({ children }) {
         ...delivery,
         createdAt: new Date().toISOString(),
         totalValue: delivery.packages * 7.5 + (delivery.additionalValue || 0),
+        paid: delivery.paid, // Inicialmente, a entrega não está paga
       };
 
       const savedDelivery = await deliveryServices.add(newDelivery);
@@ -161,6 +162,36 @@ export function AppProvider({ children }) {
         { packages: 0, value: 0 }
       );
   };
+  const togglePaymentStatus = async (deliveryId) => {
+    try {
+      // Busca a entrega que será atualizada
+      const delivery = deliveries.find((d) => d.id === deliveryId);
+      if (!delivery) throw new Error("Entrega não encontrada");
+
+      // Alterna o status de pagamento
+      const updatedDelivery = {
+        ...delivery,
+        paid: !delivery.paid,
+        updatedAt: new Date().toISOString(),
+      };
+
+      // Atualiza no banco de dados
+      const savedDelivery = await deliveryServices.update(
+        deliveryId,
+        updatedDelivery
+      );
+
+      // Atualiza no estado local
+      setDeliveries((prev) =>
+        prev.map((d) => (d.id === deliveryId ? savedDelivery : d))
+      );
+
+      return savedDelivery;
+    } catch (err) {
+      setError("Erro ao atualizar status de pagamento: " + err.message);
+      throw err;
+    }
+  };
 
   return (
     <AppContext.Provider
@@ -170,6 +201,7 @@ export function AppProvider({ children }) {
         addDeliveryPerson,
         updateDeliveryPerson,
         deleteDeliveryPerson,
+        togglePaymentStatus,
         addDelivery,
         updateDelivery, // Nova função exportada
         deleteDelivery, // Nova função exportada

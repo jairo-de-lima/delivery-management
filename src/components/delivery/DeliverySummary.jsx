@@ -16,7 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import { DeliveryAnalytics } from "./DeliveryAnalytics";
 
 export function DeliverySummary({ onSuccess }) {
-  const { deliveries, deliveryPeople, deleteDelivery } = useApp();
+  const { deliveries, deliveryPeople, deleteDelivery, updateDelivery } =
+    useApp();
   const [error] = useState(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentDelivery, setCurrentDelivery] = useState(null);
@@ -104,11 +105,33 @@ export function DeliverySummary({ onSuccess }) {
     });
   };
 
+  // Marcar como pago em massa
+  const markAsPaid = () => {
+    const filteredDeliveries = getPersonDeliveries(selectedPerson.id);
+    filteredDeliveries.forEach((delivery) => {
+      updateDelivery(delivery.id, { ...delivery, paid: true });
+    });
+  };
+
   const calculateTotalEarnings = (personDeliveries) => {
     return personDeliveries.reduce(
       (total, delivery) => total + delivery.totalValue,
       0
     );
+  };
+
+  const calculatePaidAndUnpaid = (personDeliveries) => {
+    const paid = personDeliveries.filter((delivery) => delivery.paid);
+    const unpaid = personDeliveries.filter((delivery) => !delivery.paid);
+
+    const totalPaid = paid
+      .reduce((total, delivery) => total + delivery.totalValue, 0)
+      .toFixed(2);
+    const totalUnpaid = unpaid
+      .reduce((total, delivery) => total + delivery.totalValue, 0)
+      .toFixed(2);
+
+    return { totalPaid, totalUnpaid };
   };
 
   return (
@@ -169,7 +192,10 @@ export function DeliverySummary({ onSuccess }) {
                     <option value="second">2ª Quinzena</option>
                   </select>
                 </CardContent>
-                <CardFooter className="flex w-full justify-end">
+                <CardFooter className="flex w-full items-center justify-between gap-1">
+                  <Button variant="outline" onClick={markAsPaid}>
+                    Marcar como pagas
+                  </Button>
                   <Button variant="outline" onClick={handleCloseCard}>
                     fechar
                   </Button>
@@ -245,7 +271,12 @@ export function DeliverySummary({ onSuccess }) {
           <div className="grid gap-4 mt-4 max-h-[60vh] overflow-y-auto">
             {selectedPerson &&
               getPersonDeliveries(selectedPerson.id).map((delivery) => (
-                <div key={delivery.id} className="p-4 bg-gray-50 rounded-md">
+                <div
+                  key={delivery.id}
+                  className={`${
+                    delivery.paid ? "bg-green-100" : "bg-gray-50"
+                  } p-4 rounded-md`} // A cor de fundo é alterada com base em `delivery.`
+                >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="text-sm text-gray-600 space-y-1">
@@ -322,9 +353,19 @@ export function DeliverySummary({ onSuccess }) {
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <p className="text-lg font-bold text-right">
                   Total: R${" "}
-                  {calculateTotalEarnings(
-                    getPersonDeliveries(selectedPerson.id)
-                  ).toFixed(2)}
+                  {
+                    calculatePaidAndUnpaid(
+                      getPersonDeliveries(selectedPerson.id)
+                    ).totalPaid
+                  }
+                </p>
+                <p className="text-lg font-bold text-right">
+                  Total: R${" "}
+                  {
+                    calculatePaidAndUnpaid(
+                      getPersonDeliveries(selectedPerson.id)
+                    ).totalUnpaid
+                  }
                 </p>
               </div>
             )}

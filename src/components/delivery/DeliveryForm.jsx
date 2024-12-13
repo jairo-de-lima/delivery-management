@@ -35,6 +35,7 @@ export function DeliveryForm({ onSuccess, initialData, isEditing }) {
   const [editingPerson, setEditingPerson] = useState(null);
   const [editedName, setEditedName] = useState("");
   const { toast } = useToast();
+  const [isPaid, setIsPaid] = useState(); // Estado para o campo de status de pagamento
 
   useEffect(() => {
     if (initialData && isEditing) {
@@ -51,6 +52,7 @@ export function DeliveryForm({ onSuccess, initialData, isEditing }) {
       );
       // eslint-disable-next-line react/prop-types
       setSelectedDate(initialData.date);
+      setIsPaid(initialData.paid || false); // Carrega o status de pagamento
     }
   }, [initialData, isEditing]);
 
@@ -80,6 +82,7 @@ export function DeliveryForm({ onSuccess, initialData, isEditing }) {
       packages: parseInt(packageCount),
       additionalValue: additionalValue ? parseFloat(additionalValue) : 0,
       date: selectedDate,
+      paid: isPaid, // Inclui o status de pagamento
     };
 
     if (isEditing && initialData) {
@@ -91,6 +94,7 @@ export function DeliveryForm({ onSuccess, initialData, isEditing }) {
 
     setPackageCount("");
     setAdditionalValue("");
+    setIsPaid(false); // Reseta o campo de status de pagamento
     onSuccess?.();
 
     toast({
@@ -284,6 +288,15 @@ export function DeliveryForm({ onSuccess, initialData, isEditing }) {
             placeholder="Valor adicional (opcional)"
             step="0.01"
           />
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="paid"
+              checked={isPaid}
+              onChange={(e) => setIsPaid(e.target.checked)}
+            />
+            <label htmlFor="paid">Entrega paga</label>
+          </div>
         </div>
 
         <button

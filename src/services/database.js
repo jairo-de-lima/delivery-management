@@ -218,4 +218,25 @@ export const deliveryServices = {
       throw error;
     }
   },
+  getPaidDeliveries: async () => {
+    try {
+      const deliveriesRef = ref(db, "deliveries");
+      const paidQuery = query(
+        deliveriesRef,
+        orderByChild("paid"),
+        equalTo(true)
+      );
+      const snapshot = await get(paidQuery);
+
+      if (!snapshot.exists()) return [];
+
+      return Object.entries(snapshot.val()).map(([id, data]) => ({
+        id,
+        ...data,
+      }));
+    } catch (error) {
+      console.error("Erro ao buscar entregas pagas:", error);
+      throw error;
+    }
+  },
 };
