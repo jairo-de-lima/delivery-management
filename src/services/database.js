@@ -113,6 +113,7 @@ export const deliveryServices = {
         ...delivery,
         createdAt: new Date().toISOString(),
         status: delivery.status || "pending",
+        paid: delivery.paid ?? false,
       });
       return { id: newDeliveryRef.key, ...delivery };
     } catch (error) {

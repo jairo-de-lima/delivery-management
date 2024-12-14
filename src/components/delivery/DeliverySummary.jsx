@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { DeliveryAnalytics } from "./DeliveryAnalytics";
 
 export function DeliverySummary({ onSuccess }) {
-  const { deliveries, deliveryPeople, deleteDelivery, updateDelivery } =
+  const { deliveries, deliveryPeople, deleteDelivery, togglePaymentStatus } =
     useApp();
   const [error] = useState(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -104,13 +104,48 @@ export function DeliverySummary({ onSuccess }) {
       );
     });
   };
+  const markAsPaid = async (selectedQuinzena) => {
+    try {
+      // Obter o intervalo de datas da quinzena
+      const { start, end } = getQuinzenaRange(selectedQuinzena);
 
-  // Marcar como pago em massa
-  const markAsPaid = () => {
-    const filteredDeliveries = getPersonDeliveries(selectedPerson.id);
-    filteredDeliveries.forEach((delivery) => {
-      updateDelivery(delivery.id, { ...delivery, paid: true });
-    });
+      // Filtrar as entregas da quinzena
+      const deliveriesInRange = deliveries.filter((delivery) => {
+        const deliveryDate = new Date(delivery.date);
+        return deliveryDate >= start && deliveryDate <= end && !delivery.paid; // Apenas não pagas
+      });
+
+      if (deliveriesInRange.length === 0) {
+        toast({
+          title: "Erro",
+          description:
+            "Nenhuma entrega não paga encontrada para esta quinzena.",
+          duration: 2000,
+        });
+        return;
+      }
+
+      // Atualizar o status de pagamento para todas as entregas
+      const updatePromises = deliveriesInRange.map((delivery) =>
+        togglePaymentStatus(delivery.id)
+      );
+
+      // Aguardar todas as atualizações
+      await Promise.all(updatePromises);
+
+      toast({
+        title: "Sucesso",
+        description: "Todas as entregas da quinzena foram marcadas como pagas.",
+        duration: 2000,
+      });
+      setIsCardOpen(false);
+    } catch (err) {
+      toast({
+        title: "Erro",
+        description: "Erro ao marcar entregas como pagas: " + err.message,
+        duration: 2000,
+      });
+    }
   };
 
   const calculateTotalEarnings = (personDeliveries) => {
@@ -325,7 +360,7 @@ export function DeliverySummary({ onSuccess }) {
                 <DialogHeader>
                   <DialogTitle>Confirmar Exclusão</DialogTitle>
                 </DialogHeader>
-                <p>Tem certeza de que deseja excluir este entregador?</p>
+                <p>Tem certeza de que deseja excluir esta entrega?</p>
                 <DialogFooter>
                   <Button
                     variant="outline"
