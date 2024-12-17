@@ -23,7 +23,12 @@ export function DeliverySummary({ onSuccess }) {
   const [currentDelivery, setCurrentDelivery] = useState(null);
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [isDeliveryDetailsOpen, setIsDeliveryDetailsOpen] = useState(false);
-  const [selectedQuinzena, setSelectedQuinzena] = useState("first"); // Estado para a quinzena selecionada
+
+  const [selectedQuinzena, setSelectedQuinzena] = useState(() => {
+    const today = new Date();
+    return today.getDate() <= 15 ? "first" : "second"; // "first" para 1ª quinzena, "second" para 2ª quinzena
+  });
+  // Estado para a quinzena selecionada
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
@@ -83,17 +88,18 @@ export function DeliverySummary({ onSuccess }) {
 
     if (quinzena === "first") {
       // Primeira quinzena: do dia 1 ao dia 15
-      const start = new Date(startYear, startMonth, 0);
+      const start = new Date(startYear, startMonth, 1);
       const end = new Date(startYear, startMonth, 15);
       return { start, end };
     } else {
       // Segunda quinzena: do dia 16 ao último dia do mês
-      const start = new Date(startYear, startMonth, 16);
+      const start = new Date(startYear, startMonth, 15);
       const end = new Date(startYear, startMonth, lastDayOfMonth);
       return { start, end };
     }
   };
   const { start, end } = getQuinzenaRange(selectedQuinzena);
+
   const getPersonDeliveries = (personId) => {
     return deliveries.filter((delivery) => {
       const deliveryDate = new Date(delivery.date);
